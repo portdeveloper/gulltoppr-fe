@@ -9,21 +9,21 @@ import { getTargetNetwork } from "~~/utils/scaffold-eth";
 import { ContractName } from "~~/utils/scaffold-eth/contract";
 
 type ContractUIProps = {
-  contractName: ContractName;
   className?: string;
+  deployedContractData?: any; // @todo type this
+  isDeployedContractLoading?: boolean;
 };
 
 /**
  * UI component to interface with deployed contracts.
  **/
-export const ContractUI = ({ contractName, className = "" }: ContractUIProps) => {
+export const ContractUI = ({ className = "", deployedContractData, isDeployedContractLoading }: ContractUIProps) => {
   const [refreshDisplayVariables, triggerRefreshDisplayVariables] = useReducer(value => !value, false);
   const configuredNetwork = getTargetNetwork();
 
-  const { data: deployedContractData, isLoading: deployedContractLoading } = useDeployedContractInfo(contractName);
   const networkColor = useNetworkColor();
 
-  if (deployedContractLoading) {
+  if (isDeployedContractLoading) {
     return (
       <div className="mt-14">
         <Spinner width="50px" height="50px" />
@@ -34,7 +34,7 @@ export const ContractUI = ({ contractName, className = "" }: ContractUIProps) =>
   if (!deployedContractData) {
     return (
       <p className="text-3xl mt-14">
-        {`No contract found by the name of "${contractName}" on chain "${configuredNetwork.name}"!`}
+        {`No contract found by the name of "CONTRACTNAMEHERE" on chain "${configuredNetwork.name}"!`}
       </p>
     );
   }
@@ -46,7 +46,7 @@ export const ContractUI = ({ contractName, className = "" }: ContractUIProps) =>
           <div className="bg-base-100 border-base-300 border shadow-md shadow-secondary rounded-3xl px-6 lg:px-8 mb-6 space-y-1 py-4">
             <div className="flex">
               <div className="flex flex-col gap-1">
-                <span className="font-bold">{contractName}</span>
+                <span className="font-bold">CONTRACTNAMEHERE</span>
                 <Address address={deployedContractData.address} />
                 <div className="flex gap-1 items-center">
                   <span className="font-bold text-sm">Balance:</span>

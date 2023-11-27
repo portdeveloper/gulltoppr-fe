@@ -1,56 +1,53 @@
 import { ReactElement } from "react";
-import { TransactionBase, TransactionReceipt, formatEther } from "viem";
-import { Address } from "~~/components/scaffold-eth";
+import { Hex, formatEther, hexToBigInt, hexToBool, hexToString } from "viem";
 import { replacer } from "~~/utils/scaffold-eth/common";
 
-type DisplayContent =
-  | string
-  | number
-  | bigint
-  | Record<string, any>
-  | TransactionBase
-  | TransactionReceipt
-  | undefined
-  | unknown;
+type DisplayContent = string | number | bigint | Record<string, any> | undefined | unknown;
 
 export const displayTxResult = (
   displayContent: DisplayContent | DisplayContent[],
   asText = false,
-): string | ReactElement | number => {
+): ReactElement | string => {
   if (displayContent == null) {
     return "";
   }
 
   if (typeof displayContent === "bigint") {
-    try {
-      const asNumber = Number(displayContent);
-      if (asNumber <= Number.MAX_SAFE_INTEGER && asNumber >= Number.MIN_SAFE_INTEGER) {
-        return asNumber;
-      } else {
-        return "Ξ" + formatEther(displayContent);
-      }
-    } catch (e) {
-      return "Ξ" + formatEther(displayContent);
-    }
+    const interpretations = [];
+    interpretations.push(`BigInt: ${displayContent.toString()}`);
+    interpretations.push(`Formatted Ether: Ξ${formatEther(displayContent)}`);
+    return (
+      <>
+        {interpretations.map((interpretation, index) => (
+          <div key={index}>{interpretation}</div>
+        ))}
+      </>
+    );
   }
 
-  if (typeof displayContent === "string" && displayContent.indexOf("0x") === 0 && displayContent.length === 42) {
-    return asText ? displayContent : <Address address={displayContent} />;
-  }
+  if (typeof displayContent === "string" && /^0x[0-9a-fA-F]+$/.test(displayContent)) {
+    const interpretations = [];
 
-  if (Array.isArray(displayContent)) {
-    const mostReadable = (v: DisplayContent) =>
-      ["number", "boolean"].includes(typeof v) ? v : displayTxResultAsText(v);
-    const displayable = JSON.stringify(displayContent.map(mostReadable), replacer);
+    interpretations.push(`NumberString: ${Number(displayContent)}`);
 
-    return asText ? (
-      displayable
-    ) : (
-      <span style={{ overflowWrap: "break-word", width: "100%" }}>{displayable.replaceAll(",", ",\n")}</span>
+    interpretations.push(`Boolean: ${displayContent ? "true" : "false"}`);
+
+    interpretations.push(`Address: ${displayContent}`);
+
+    interpretations.push(`BigInt: ${BigInt(displayContent).toString()}`);
+
+    interpretations.push(`Formatted Ether: Ξ${formatEther(BigInt(displayContent))}`);
+
+    interpretations.push(`String: ${hexToString(displayContent as Hex)}`);
+
+    return (
+      <>
+        {interpretations.map((interpretation, index) => (
+          <div key={index}>{interpretation}</div>
+        ))}
+      </>
     );
   }
 
   return JSON.stringify(displayContent, replacer, 2);
 };
-
-const displayTxResultAsText = (displayContent: DisplayContent) => displayTxResult(displayContent, true);

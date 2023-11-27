@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { InheritanceTooltip } from "./InheritanceTooltip";
 import { Abi, AbiFunction } from "abitype";
 import { Address } from "viem";
@@ -6,7 +6,6 @@ import { useContractRead } from "wagmi";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { displayTxResult } from "~~/components/scaffold-eth";
 import { useAnimationConfig } from "~~/hooks/scaffold-eth";
-import { notification } from "~~/utils/scaffold-eth";
 
 type DisplayVariableProps = {
   contractAddress: Address;
@@ -21,16 +20,39 @@ export const DisplayVariable = ({
   refreshDisplayVariables,
   inheritedFrom,
 }: DisplayVariableProps) => {
+  const [modifiedAbiFunction, setModifiedAbiFunction] = useState(abiFunction);
+
+  const tryDifferentReturnTypes = (error: Error, currentAbiFunction: any) => {
+    console.log("Trying different return types due to error:", error);
+
+    // Define a list of potential return types to try
+    const potentialReturnTypes = ["string", "uint256", "bytes32", "bool", "address"];
+
+    // Find the current return type index
+    let currentTypeIndex = potentialReturnTypes.indexOf(currentAbiFunction.outputs[0].type);
+
+    // Try the next return type in the list
+    if (currentTypeIndex < potentialReturnTypes.length - 1) {
+      let nextType = potentialReturnTypes[currentTypeIndex + 1];
+      let updatedAbiFunction = { ...currentAbiFunction };
+      updatedAbiFunction.outputs = [{ ...updatedAbiFunction.outputs[0], type: nextType }];
+      setModifiedAbiFunction(updatedAbiFunction);
+      console.log(`Updated return type to: ${nextType}`);
+    } else {
+      console.log("Tried all return types, unable to resolve the correct type.");
+    }
+  };
+
   const {
     data: result,
     isFetching,
     refetch,
   } = useContractRead({
     address: contractAddress,
-    functionName: abiFunction.name,
-    abi: [abiFunction] as Abi,
+    functionName: modifiedAbiFunction.name,
+    abi: [modifiedAbiFunction] as Abi,
     onError: error => {
-      notification.error(error.message);
+      tryDifferentReturnTypes(error, modifiedAbiFunction);
     },
   });
 
@@ -38,7 +60,7 @@ export const DisplayVariable = ({
 
   useEffect(() => {
     refetch();
-  }, [refetch, refreshDisplayVariables]);
+  }, [refetch, refreshDisplayVariables, modifiedAbiFunction]);
 
   return (
     <div className="space-y-1 pb-2">

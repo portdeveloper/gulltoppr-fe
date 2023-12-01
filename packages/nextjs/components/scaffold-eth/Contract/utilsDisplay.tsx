@@ -1,13 +1,10 @@
 import { ReactElement } from "react";
-import { Hex, formatEther, hexToBigInt, hexToBool, hexToString } from "viem";
+import { Hex, formatEther, hexToString } from "viem";
 import { replacer } from "~~/utils/scaffold-eth/common";
 
 type DisplayContent = string | number | bigint | Record<string, any> | undefined | unknown;
 
-export const displayTxResult = (
-  displayContent: DisplayContent | DisplayContent[],
-  asText = false,
-): ReactElement | string => {
+export const displayTxResult = (displayContent: DisplayContent | DisplayContent[]): ReactElement | string => {
   if (displayContent == null) {
     return "";
   }

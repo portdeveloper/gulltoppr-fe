@@ -29,12 +29,12 @@ export const DisplayVariable = ({
     const potentialReturnTypes = ["string", "uint256", "bytes32", "bool", "address"];
 
     // Find the current return type index
-    let currentTypeIndex = potentialReturnTypes.indexOf(currentAbiFunction.outputs[0].type);
+    const currentTypeIndex = potentialReturnTypes.indexOf(currentAbiFunction.outputs[0].type);
 
     // Try the next return type in the list
     if (currentTypeIndex < potentialReturnTypes.length - 1) {
-      let nextType = potentialReturnTypes[currentTypeIndex + 1];
-      let updatedAbiFunction = { ...currentAbiFunction };
+      const nextType = potentialReturnTypes[currentTypeIndex + 1];
+      const updatedAbiFunction = { ...currentAbiFunction };
       updatedAbiFunction.outputs = [{ ...updatedAbiFunction.outputs[0], type: nextType }];
       setModifiedAbiFunction(updatedAbiFunction);
       console.log(`Updated return type to: ${nextType}`);
